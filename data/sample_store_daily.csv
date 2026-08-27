@@ -1,0 +1,9 @@
+date,store_id,store_name,region,treated_store,post_period,transactions,net_sales_gbp,forecast_sales_gbp,paid_hours,wage_cost_gbp,food_cost_gbp,waste_cost_gbp,avg_service_seconds,complaints,promo_flag,delivery_mix_pct,weather_index,local_event_flag
+2026-03-29,S001,Birmingham Central,West Midlands,1,0,468,5265.00,5150.00,66.86,856.40,1338.53,92.10,184.2,2,0,24.6,0.210,0
+2026-03-30,S001,Birmingham Central,West Midlands,1,0,421,4673.10,4790.00,59.72,764.42,1182.57,78.25,179.1,1,0,23.8,-0.145,0
+2026-04-02,S001,Birmingham Central,West Midlands,1,1,438,4905.60,4820.00,59.19,755.83,1245.18,72.40,164.7,1,0,25.2,0.088,0
+2026-04-03,S001,Birmingham Central,West Midlands,1,1,493,5590.62,5480.00,66.45,850.56,1420.31,79.15,165.4,1,1,26.1,0.340,0
+2026-03-29,S005,Leicester,East Midlands,0,0,432,4795.20,4680.00,60.85,781.93,1214.78,79.95,181.6,2,0,22.9,0.173,0
+2026-03-30,S005,Leicester,East Midlands,0,0,389,4317.90,4380.00,54.55,696.80,1092.41,73.30,185.2,1,0,23.1,-0.060,0
+2026-04-02,S005,Leicester,East Midlands,0,1,402,4482.30,4410.00,56.27,723.07,1137.86,75.90,181.3,2,0,23.7,0.101,0
+2026-04-03,S005,Leicester,East Midlands,0,1,455,5096.00,5015.00,63.38,817.60,1284.55,86.20,180.8,1,1,24.4,0.298,0
