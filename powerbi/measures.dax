@@ -1,0 +1,60 @@
+-- Core measures for a Power BI model using fact table 'store_daily'
+
+Net Sales GBP =
+SUM(store_daily[net_sales_gbp])
+
+Revenue Ex VAT GBP =
+DIVIDE([Net Sales GBP], 1.20)
+
+Transactions =
+SUM(store_daily[transactions])
+
+Paid Hours =
+SUM(store_daily[paid_hours])
+
+Wage Cost GBP =
+SUM(store_daily[wage_cost_gbp])
+
+Food Cost GBP =
+SUM(store_daily[food_cost_gbp])
+
+Waste Cost GBP =
+SUM(store_daily[waste_cost_gbp])
+
+Average Transaction Value GBP =
+DIVIDE([Net Sales GBP], [Transactions])
+
+Transactions per Paid Hour =
+DIVIDE([Transactions], [Paid Hours])
+
+Sales per Paid Hour GBP =
+DIVIDE([Net Sales GBP], [Paid Hours])
+
+Labour Cost % =
+DIVIDE([Wage Cost GBP], [Revenue Ex VAT GBP])
+
+Food Cost % =
+DIVIDE([Food Cost GBP], [Revenue Ex VAT GBP])
+
+Waste % Sales =
+DIVIDE([Waste Cost GBP], [Revenue Ex VAT GBP])
+
+Complaints per 1000 Orders =
+DIVIDE(SUM(store_daily[complaints]) * 1000, [Transactions])
+
+Forecast APE % =
+VAR Actual = [Net Sales GBP]
+VAR Forecast = SUM(store_daily[forecast_sales_gbp])
+RETURN DIVIDE(ABS(Actual - Forecast), Actual)
+
+Contribution Profit GBP =
+[Revenue Ex VAT GBP] - [Food Cost GBP] - [Wage Cost GBP] - [Waste Cost GBP]
+
+Treated Post Flag =
+MAX(store_daily[treated_store]) * MAX(store_daily[post_period])
+
+-- Suggested formatting:
+-- Currency measures: £#,##0
+-- Percentage measures: 0.0%
+-- Transactions/paid hour: 0.00
+-- Service time: 0 "sec"
