@@ -1,22 +1,25 @@
 name: qsr-analytics-ci
-
-on:
-  push:
-  pull_request:
-
+on: [push, pull_request]
+permissions:
+  contents: read
 jobs:
-  test:
+  validate:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.11', '3.12']
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-      - name: Run unit tests
-        run: pytest -q
-      - name: Generate synthetic data
-        run: python scripts/generate_synthetic_data.py
-      - name: Run analysis
-        run: python scripts/run_analysis.py
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - run: pip install -e .
+      - run: ruff check src scripts tests
+      - run: ruff format --check src scripts tests
+      - run: python scripts/check_publication.py
+      - run: pytest -q
+      - run: python scripts/generate_synthetic_data.py
+      - run: python scripts/run_analysis.py
+      - name: Execute teaching notebook
+        run: jupyter nbconvert --execute --to notebook --inplace --ExecutePreprocessor.timeout=180 notebooks/01_end_to_end_qsr_analytics.ipynb
