@@ -1,49 +1,55 @@
-from pathlib import Path
+"""Validate detail -> operational mart -> forecasts and educational causal diagnostics."""
+
+import json
 import sys
+from pathlib import Path
 
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-
-from qsr_analytics.metrics import add_kpis
-from qsr_analytics.did import manual_did, fit_twfe_did
+from qsr_analytics.did import event_study, fit_twfe_did, manual_did, pretrend_diagnostics
+from qsr_analytics.etl import load_tables, validate_tables
+from qsr_analytics.forecasting import forecast_scores
+from qsr_analytics.labour import labour_summary, staffing_scenario
+from qsr_analytics.metrics import add_kpis, aggregate_kpis
 
 
 def main():
-    source = Path("data/generated/store_daily.csv")
-    if not source.exists():
-        raise FileNotFoundError("Run scripts/generate_synthetic_data.py first")
-
-    df = pd.read_csv(source, parse_dates=["date"])
-    df = add_kpis(df)
-
-    required_unique = df.groupby(["store_id", "date"]).size().max()
-    if required_unique != 1:
-        raise ValueError("store_daily must contain exactly one row per store/date")
-    if (df[["transactions", "net_sales_gbp", "paid_hours"]].lt(0)).any().any():
-        raise ValueError("Negative operational values detected")
-
-    outcomes = [
-        "transactions_per_paid_hour",
-        "labour_cost_pct",
-        "waste_pct_sales",
-        "avg_service_seconds",
-        "complaints_per_1000_orders",
-        "contribution_profit_gbp",
-    ]
-
-    print("\n=== 2x2 Difference-in-Differences ===")
-    for outcome in outcomes:
-        result = manual_did(df, outcome)
-        print(f"{outcome:35s}: {result['did_estimate']:.4f}")
-
-    print("\n=== Two-way fixed-effects DID: productivity ===")
-    model = fit_twfe_did(df, "transactions_per_paid_hour")
-    beta = model.params["did"]
-    se = model.bse["did"]
-    p = model.pvalues["did"]
-    print(f"effect={beta:.4f}; clustered_SE={se:.4f}; p={p:.6f}")
-    print(f"95% CI=({beta - 1.96 * se:.4f}, {beta + 1.96 * se:.4f})")
+    t = load_tables("data/generated")
+    counts = validate_tables(t)
+    df = add_kpis(t["store_daily"])
+    output = Path("reports/generated")
+    output.mkdir(parents=True, exist_ok=True)
+    forecast_scores(t["forecasts"]).to_csv(output / "forecast_scores.csv", index=False)
+    aggregate_kpis(t["store_daily"], ["treated_store", "post_period"]).to_csv(
+        output / "group_period_kpis.csv", index=False
+    )
+    labour_summary(t["employee_shifts"]).to_csv(output / "labour_summary.csv", index=False)
+    staffing_scenario(t["forecasts"]).to_csv(output / "staffing_scenarios.csv", index=False)
+    df.to_csv(output / "daily_kpis.csv", index=False)
+    outcome = "transactions_per_paid_hour"
+    model = fit_twfe_did(df, outcome)
+    trend, placebo = pretrend_diagnostics(df, outcome)
+    trend.to_csv(output / "pretrends.csv")
+    event_study(df, outcome).to_csv(output / "event_study.csv", index=False)
+    ci = model.conf_int().loc["did"].tolist()
+    result = dict(
+        synthetic_only=True,
+        validated_rows=counts,
+        manual=manual_did(df, outcome),
+        twfe=dict(
+            estimate=model.params["did"],
+            se=model.bse["did"],
+            p=model.pvalues["did"],
+            ci_95=ci,
+            clusters=int(df.store_id.nunique()),
+        ),
+        pre_period_placebo=placebo,
+        caveat="Few clusters; injected scenario effects, no real business causal claims.",
+    )
+    (output / "analysis.json").write_text(json.dumps(result, indent=2) + "\n")
+    print(json.dumps(result, indent=2))
+    print(pd.read_csv(output / "forecast_scores.csv").to_string(index=False))
 
 
 if __name__ == "__main__":

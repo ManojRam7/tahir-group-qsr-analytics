@@ -1,45 +1,72 @@
-import sys
-from pathlib import Path
-
+import numpy as np
 import pandas as pd
+import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-
-from qsr_analytics.metrics import add_kpis
 from qsr_analytics.did import manual_did
+from qsr_analytics.metrics import (
+    add_kpis,
+    aggregate_kpis,
+    parse_duration,
+    parse_roster_hours,
+    safe_divide,
+)
 
 
-def test_kpi_math():
-    df = pd.DataFrame([
-        {
-            "net_sales_gbp": 1200.0,
-            "transactions": 100,
-            "paid_hours": 20,
-            "wage_cost_gbp": 200.0,
-            "food_cost_gbp": 300.0,
-            "waste_cost_gbp": 20.0,
-            "complaints": 2,
-            "forecast_sales_gbp": 1000.0,
-        }
-    ])
+def test_net_sales_already_ex_tax_and_waste_not_double_counted():
+    df = pd.DataFrame(
+        [
+            dict(
+                net_sales_gbp=1000.0,
+                transactions=100,
+                paid_hours=20,
+                wage_cost_gbp=200,
+                food_cost_gbp=300,
+                waste_cost_gbp=20,
+                packaging_cost_gbp=15,
+                complaints=2,
+                forecast_sales_gbp=900,
+            )
+        ]
+    )
     out = add_kpis(df).iloc[0]
-    assert round(out.revenue_ex_vat_gbp, 2) == 1000.00
-    assert round(out.avg_transaction_value_gbp, 2) == 12.00
-    assert round(out.transactions_per_paid_hour, 2) == 5.00
-    assert round(out.labour_cost_pct, 2) == 20.00
-    assert round(out.waste_pct_sales, 2) == 2.00
-    assert round(out.complaints_per_1000_orders, 2) == 20.00
+    assert out.revenue_ex_vat_gbp == 1000
+    assert out.avg_transaction_value_gbp == 10
+    assert out.labour_cost_pct == 20
+    assert out.contribution_profit_gbp == 485
+
+
+def test_zero_and_time_formats():
+    assert np.isnan(safe_divide(1, 0))
+    assert parse_duration("04:28") == 268
+    assert parse_roster_hours("123:30") == 123.5
+    with pytest.raises(ValueError):
+        parse_duration("04:60")
+
+
+def test_weighted_ratios():
+    df = pd.DataFrame(
+        dict(
+            group=[1, 1],
+            net_sales_gbp=[100.0, 900.0],
+            transactions=[10, 30],
+            paid_hours=[2, 3],
+            wage_cost_gbp=[20, 40],
+            food_cost_gbp=[30, 100],
+            waste_cost_gbp=[1, 2],
+            complaints=[0, 1],
+            service_total_seconds=[100, 2700],
+            service_orders=[1, 9],
+        )
+    )
+    out = aggregate_kpis(df, ["group"]).iloc[0]
+    assert out.avg_transaction_value_gbp == 25
+    assert out.avg_service_seconds == 280
 
 
 def test_manual_did():
     df = pd.DataFrame(
-        {
-            "treated_store": [0, 0, 1, 1],
-            "post_period": [0, 1, 0, 1],
-            "y": [10.0, 11.0, 10.0, 13.0],
-        }
+        dict(treated_store=[0, 0, 1, 1], post_period=[0, 1, 0, 1], y=[10.0, 11.0, 10.0, 13.0])
     )
-    result = manual_did(df, "y")
-    assert result["treated_change"] == 3.0
-    assert result["control_change"] == 1.0
-    assert result["did_estimate"] == 2.0
+    assert manual_did(df, "y")["did_estimate"] == 2
+    with pytest.raises(ValueError):
+        manual_did(df.iloc[:3], "y")

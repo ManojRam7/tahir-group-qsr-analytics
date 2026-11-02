@@ -1,60 +1,44 @@
--- Core measures for a Power BI model using fact table 'store_daily'
-
-Net Sales GBP =
-SUM(store_daily[net_sales_gbp])
-
-Revenue Ex VAT GBP =
-DIVIDE([Net Sales GBP], 1.20)
-
-Transactions =
-SUM(store_daily[transactions])
-
-Paid Hours =
-SUM(store_daily[paid_hours])
-
-Wage Cost GBP =
-SUM(store_daily[wage_cost_gbp])
-
-Food Cost GBP =
-SUM(store_daily[food_cost_gbp])
-
-Waste Cost GBP =
-SUM(store_daily[waste_cost_gbp])
-
-Average Transaction Value GBP =
-DIVIDE([Net Sales GBP], [Transactions])
-
-Transactions per Paid Hour =
-DIVIDE([Transactions], [Paid Hours])
-
-Sales per Paid Hour GBP =
-DIVIDE([Net Sales GBP], [Paid Hours])
-
-Labour Cost % =
-DIVIDE([Wage Cost GBP], [Revenue Ex VAT GBP])
-
-Food Cost % =
-DIVIDE([Food Cost GBP], [Revenue Ex VAT GBP])
-
-Waste % Sales =
-DIVIDE([Waste Cost GBP], [Revenue Ex VAT GBP])
-
-Complaints per 1000 Orders =
-DIVIDE(SUM(store_daily[complaints]) * 1000, [Transactions])
-
-Forecast APE % =
-VAR Actual = [Net Sales GBP]
-VAR Forecast = SUM(store_daily[forecast_sales_gbp])
-RETURN DIVIDE(ABS(Actual - Forecast), Actual)
-
-Contribution Profit GBP =
-[Revenue Ex VAT GBP] - [Food Cost GBP] - [Wage Cost GBP] - [Waste Cost GBP]
-
-Treated Post Flag =
-MAX(store_daily[treated_store]) * MAX(store_daily[post_period])
-
--- Suggested formatting:
--- Currency measures: £#,##0
--- Percentage measures: 0.0%
--- Transactions/paid hour: 0.00
--- Service time: 0 "sec"
+-- DimStore/DimDate filter facts one-to-many, single direction.
+-- Rates below use 0..1; format as 0.0%. Python/SQL percent outputs use 0..100.
+-- Net is already ex-tax. All costs are additive; food usage INCLUDES recorded waste.
+Net Sales GBP = SUM(store_daily[net_sales_gbp])
+Gross Sales GBP = SUM(store_daily[gross_sales_gbp])
+Tax GBP = SUM(store_daily[tax_gbp])
+Revenue Ex VAT GBP = [Net Sales GBP]
+Transactions = SUM(store_daily[transactions])
+Paid Hours = SUM(store_daily[paid_hours])
+Direct Hours = SUM(store_daily[direct_hours])
+Manager Hours = SUM(store_daily[manager_hours])
+Scheduled Hours = SUM(store_daily[scheduled_hours])
+Hours Variance = [Paid Hours] - [Scheduled Hours]
+Wage Cost GBP = SUM(store_daily[wage_cost_gbp])
+Food Cost GBP = SUM(store_daily[food_cost_gbp])
+Waste Cost GBP = SUM(store_daily[waste_cost_gbp])
+Packaging Cost GBP = SUM(store_daily[packaging_cost_gbp])
+Average Transaction Value GBP = DIVIDE([Net Sales GBP], [Transactions])
+Transactions per Paid Hour = DIVIDE([Transactions], [Paid Hours])
+Direct Transactions per Hour = DIVIDE([Transactions], [Direct Hours])
+Sales per Paid Hour GBP = DIVIDE([Net Sales GBP], [Paid Hours])
+Labour Cost % = DIVIDE([Wage Cost GBP], [Net Sales GBP])
+Team Labour Cost % = DIVIDE(SUM(store_daily[team_wage_cost_gbp]), [Net Sales GBP])
+Food Cost % = DIVIDE([Food Cost GBP], [Net Sales GBP])
+Waste % Sales = DIVIDE([Waste Cost GBP], [Net Sales GBP])
+Contribution Profit GBP = [Net Sales GBP] - [Food Cost GBP] - [Packaging Cost GBP] - [Wage Cost GBP]
+Complaints per 1000 Orders = DIVIDE(1000 * SUM(store_daily[complaints]), [Transactions])
+Mean Service Seconds = DIVIDE(SUM(store_daily[service_total_seconds]), SUM(store_daily[service_orders]))
+Driver Handoff Seconds = DIVIDE(SUM(store_daily[handoff_total_seconds]), SUM(store_daily[handoff_orders]))
+Delivery Sales Mix % = DIVIDE(SUM(store_daily[delivery_net_sales_gbp]), [Net Sales GBP])
+Rejection % = DIVIDE(SUM(store_daily[rejected_orders]), SUM(store_daily[offered_orders]))
+Offline % = DIVIDE(SUM(store_daily[offline_minutes]), SUM(store_daily[scheduled_minutes]))
+Delivery Issue % = DIVIDE(SUM(store_daily[delivery_issue_orders]), SUM(store_daily[delivery_accuracy_eligible_orders]))
+Upgrade % = DIVIDE(SUM(store_daily[upgraded_transactions]), SUM(store_daily[upgrade_eligible_transactions]))
+Availability % = DIVIDE(SUM(store_daily[available_minutes]), SUM(store_daily[eligible_minutes]))
+-- Filter forecasts to ONE model, metric, horizon. DimDate joins target_date; origin uses role-playing Date.
+Forecast WAPE % =
+IF(HASONEVALUE(forecasts[model]) && HASONEVALUE(forecasts[metric]) && HASONEVALUE(forecasts[horizon_days]),
+    DIVIDE(SUMX(forecasts, ABS(forecasts[forecast] - forecasts[actual])), SUM(forecasts[actual])))
+Forecast Bias % =
+IF(HASONEVALUE(forecasts[model]) && HASONEVALUE(forecasts[metric]) && HASONEVALUE(forecasts[horizon_days]),
+    DIVIDE(SUMX(forecasts, forecasts[forecast] - forecasts[actual]), SUM(forecasts[actual])))
+-- No DAX MAX(treated)*MAX(post) estimator: use exported validated DID results.
+-- No official Gold Standard / accuracy / scorecard reconstruction without definitions.

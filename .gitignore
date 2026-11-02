@@ -8,3 +8,17 @@ venv/
 .DS_Store
 reports/generated/
 data/generated/
+# Internal evidence must stay outside this repository
+private/
+source_material/
+*.pdf
+*.eml
+*.msg
+*.png
+*.jpg
+*.jpeg
+*.duckdb
+*.egg-info/
+build/
+dist/
+.ruff_cache/

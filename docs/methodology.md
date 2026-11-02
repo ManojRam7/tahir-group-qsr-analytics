@@ -1,192 +1,101 @@
-# Analytics Methodology
+# Mathematics, forecasting and causal design
 
-## 1. Business problem
+## Sales and labour examples (entirely fictional)
 
-A multi-site QSR operator needs to answer four recurring questions:
+Let net sales S = £4,000, tax = £800 and gross = £4,800. Net remains £4,000;
+do not divide it again by 1.2. Real feeds need reported tax, not an assumed uniform rate.
+Suppose 400 transactions, 40 team paid hours at £15 and 10 management paid hours at £20:
 
-1. Are sales growing because of higher traffic, higher average ticket, promotions, delivery mix, or local events?
-2. Is labour scheduled efficiently relative to transaction demand?
-3. Are stores controlling food cost, waste, service time, and complaints?
-4. Did an operational intervention genuinely improve performance, or would the same change have happened anyway?
+- Ticket = 4,000 / 400 = £10 ex-tax/order.
+- Team wage = 40 × 15 = £600; manager wage = 10 × 20 = £200.
+- Team labour = 600 / 4,000 = 15%; total labour = 800 / 4,000 = 20%.
+- Direct transactions/hour = 400 / 40 = 10 (candidate source mapping, not certified DTPLH).
+- All-paid productivity = 400 / 50 = 8; sales/paid hour = £80.
 
-The project uses synthetic restaurant data so the full workflow can be shared publicly without exposing confidential company information.
+Scheduled hours differ from actual paid hours. Hours variance = paid - scheduled. Absence is
+not overtime and cannot carry paid hours in this demo. Real timekeeping needs break, holiday,
+indirect work, paid absence and cross-midnight rules. Weekly HHH:MM parses as hours/minutes;
+service mm:ss parses as minutes/seconds, so 04:30 is 270 seconds, not 4.30 minutes.
 
-## 2. Data grains
+Inventory example: opening 100 kg + receipt 50 + inbound 5 - outbound 3 - closing 72 =
+80 kg actual usage. Theoretical 75 and recorded waste 3 leave 2 kg unexplained usage.
+At £4/kg, usage costs £320, of which waste costs £12. Contribution subtracts £320 once.
+Food cost contains recorded waste; packaging is separate. This partial contribution excludes
+occupancy, commissions, utilities and many other costs; it is not EBITDA.
 
-The most important modelling rule is to preserve source grain.
+Period ratios use summed numerators/denominators. Two days with 10 orders/1 paid hour and
+90 orders/30 paid hours have 100/31 = 3.226 orders/hour overall, not (10+3)/2 = 6.5.
+A service mean uses sum of measured durations / measured orders; exclude unavailable timers,
+not all orders by default. Complaint denominators must match covered order channels.
 
-- `store_daily`: one row per `store_id + date`. Sales, transactions, labour cost, inventory cost and service KPIs live here.
-- `employee_shifts`: one row per employee shift. This is a lower-level fact table and must be aggregated to store/day before it is joined to `store_daily`.
+## Forecasting
 
-Joining a store-day sales row directly to ten employee shifts multiplies sales by ten. This is one of the most common BI modelling errors.
+The generator no longer perturbs realized actuals to manufacture a forecast. Forecasts are
+issued at a dated origin for target origin + 7 days, using history through the origin only.
+The seasonal-naive baseline uses the last observed matching weekday; the challenger averages
+up to four previous matching weekdays. Calendar gaps fail validation. All channel combinations,
+including inactive fictional drive-thru zero demand, are explicit. Actuals are attached solely
+for scoring. No forecast exists during warm-up; missing does not become zero.
 
-## 3. Core KPI mathematics
+Forecast errors: daily error = actual - forecast; positive means underforecast. Backtest bias
+= sum(forecast - actual)/sum(actual), positive means overforecast. MAE and RMSE retain the
+metric's units. WAPE = sum(abs(forecast - actual))/sum(actual); zero total actual gives null.
+APE is undefined when individual actual is zero; do not remove zero-demand rows to improve scores.
+Two £100 actuals forecast at £80 and £120 have WAPE 20%, bias 0%, and aggregate APE 0%.
+These are different quantities. Evaluate sales and transactions separately.
 
-Let:
+Rolling origins evaluate both methods on identical dates, channels and horizons. No model is
+selected on the same backtest and called an independently tested winner. Production work needs
+a locked future test period, promotions known at origin, revisions/as-of actuals, event features,
+probabilistic intervals and a store-level comparison against seasonal naive. `labour.py` exports role-level scheduled/paid/cost/absence summaries and a staffing scenario:
+forecast transactions / assumed direct productivity + fixed manager coverage. These are
+whole-day hours, not peak station or legal roster optimization. Planning may use
+forecast transactions / target productivity, but a target is a scenario, not causal evidence
+or a legal staffing minimum. Source lockdown/system forecasts remain distinct vintages.
 
-- \(S\) = net sales including VAT
-- \(T\) = transactions
-- \(H\) = paid labour hours
-- \(W\) = wage cost
-- \(F\) = food cost
-- \(R\) = waste cost
-- \(C\) = complaints
-- \(\hat{S}\) = forecast sales
+Methods reference: [Forecasting: Principles and Practice, benchmark methods](https://otexts.com/fpp3/simple-methods.html)
+and [time-series cross-validation](https://otexts.com/fpp3/tscv.html).
 
-Assuming a 20% UK VAT rate for the synthetic example:
+## Before/after, DID and validation
 
-\[
-Revenue\ ex\ VAT = \frac{S}{1.20}
-\]
+For fictional treated productivity 7.0 -> 7.5 and controls 7.1 -> 7.3:
 
-\[
-Average\ Transaction\ Value = \frac{S}{T}
-\]
+- Treated change = 0.5 orders/hour; relative change = 0.5/7.0 = 7.14%.
+- Control change = 0.2; counterfactual treated post = 7.0 + 0.2 = 7.2.
+- DID = (7.5 - 7.0) - (7.3 - 7.1) = +0.3 orders/hour.
 
-\[
-Transactions\ per\ Paid\ Hour = \frac{T}{H}
-\]
+For 24% -> 22% labour cost, change is -2 percentage points, an 8.33% relative reduction.
+Never label percentage-point differences as percent changes. DID uses **equal store-day outcome
+means**; business portfolio productivity uses ratio-of-sums. Their estimands differ.
 
-\[
-Sales\ per\ Paid\ Hour = \frac{S}{H}
-\]
+Model: Y_it = store fixed effect + date fixed effect + beta × treated_i × post_t + error_it.
+`validate_panel` rejects duplicate/null keys, missing/nonfinite outcomes, unbalanced date coverage,
+changing membership, staggered adoption, nonbinary flags and insufficient groups. It deliberately
+supports one common adoption date only. Manual DID and FE coincide in the balanced constant-effect
+fixture; arbitrary unbalanced panels need a different design, not silent row dropping.
 
-\[
-Labour\ Cost\ \% = \frac{W}{Revenue\ ex\ VAT}\times100
-\]
+Standard errors cluster on stores. Small-sample covariance correction, cluster degrees of freedom
+and Student-t inference are explicitly requested; confidence intervals come from the fitted model,
+not beta ± 1.96 SE. With few stores these remain fragile. See [statsmodels robust covariance
+options](https://www.statsmodels.org/stable/generated/statsmodels.regression.linear_model.RegressionResults.get_robustcov_results.html).
+The synthetic intervention is injected by design: recovering it demonstrates software, not real
+business causality or an unbiased estimate for the restaurant group.
 
-\[
-Food\ Cost\ \% = \frac{F}{Revenue\ ex\ VAT}\times100
-\]
+Outputs include pre-period weekly treated-control gaps, a mid-pre-period placebo, weekly event
+coefficients relative to week -1, cluster-t intervals and the overall DID. Pre-event estimates
+should be inspected as diagnostics; neither a flat chart nor nonsignificance proves parallel
+trends. No joint pretrend test is claimed. Consider anticipation, spillovers, closures,
+composition, endogenous treatment and concurrent policies. A production claim needs credible
+assignment, comparable controls, substantial prehistory, more clusters, sensitivity analysis and
+appropriate small-cluster/randomization or bootstrap inference. Post-treatment variables such as
+staffing outcomes should not be added as confounders indiscriminately.
 
-\[
-Waste\ \%\ of\ Sales = \frac{R}{Revenue\ ex\ VAT}\times100
-\]
+## Financial scenarios
 
-\[
-Complaints\ per\ 1000\ Orders = \frac{C}{T}\times1000
-\]
-
-\[
-APE = \left|\frac{S-\hat{S}}{S}\right|\times100
-\]
-
-\[
-Contribution\ Profit = Revenue\ ex\ VAT - F - W - R
-\]
-
-## 4. Before/after is not enough
-
-A simple before-versus-after calculation is:
-
-\[
-BeforeAfter = \bar{Y}_{after} - \bar{Y}_{before}
-\]
-
-This cannot distinguish an intervention from seasonality, weather, demand shocks, promotions, inflation, or other changes occurring at the same time.
-
-## 5. Difference-in-differences
-
-Suppose some stores receive a labour-planning intervention and comparable stores do not.
-
-The classic DID estimator is:
-
-\[
-DID = (\bar{Y}_{T,post}-\bar{Y}_{T,pre}) - (\bar{Y}_{C,post}-\bar{Y}_{C,pre})
-\]
-
-Example:
-
-- Treated stores: productivity rises from 7.0 to 7.5 transactions/hour = +0.5.
-- Control stores: productivity rises from 7.1 to 7.3 = +0.2.
-- DID = 0.5 - 0.2 = **+0.3 transactions per paid hour**.
-
-The estimated incremental effect is therefore +0.3, not the raw +0.5 observed in treated stores.
-
-## 6. Regression DID
-
-The project also estimates:
-
-\[
-Y_{it}=\alpha_i+\lambda_t+\beta(Treated_i\times Post_t)+\epsilon_{it}
-\]
-
-where:
-
-- \(\alpha_i\) = store fixed effects, absorbing stable differences such as size/location.
-- \(\lambda_t\) = date fixed effects, absorbing common daily shocks.
-- \(\beta\) = DID treatment-effect estimate.
-- Standard errors are clustered by store because repeated observations within a store are correlated.
-
-## 7. DID assumptions
-
-A DID estimate should not be called causal without checking the design assumptions:
-
-1. **Parallel trends**: absent the intervention, treated and control stores should have evolved similarly.
-2. **No anticipation**: stores should not change behaviour before treatment starts.
-3. **No major spillovers**: treated-store changes should not materially alter control-store outcomes.
-4. **Stable composition**: the store groups should not change systematically around treatment.
-5. **No simultaneous treated-only shock**: another treated-store policy change at the same date would confound the estimate.
-
-A stronger analysis would add an event-study specification and inspect pre-treatment coefficients.
-
-## 8. Improvement calculations
-
-Absolute improvement:
-
-\[
-Absolute\ Change = New - Old
-\]
-
-Relative improvement:
-
-\[
-Relative\ Change\ \% = \frac{New-Old}{Old}\times100
-\]
-
-For a KPI where lower is better, such as service time:
-
-\[
-Reduction\ \% = \frac{Old-New}{Old}\times100
-\]
-
-For rates such as labour cost percentage, communicate percentage-point changes separately from percent changes.
-
-Example: 24% to 22% = **-2 percentage points**, or an **8.33% relative reduction**.
-
-## 9. ROI
-
-For a programme with incremental annual benefit \(B\) and implementation cost \(K\):
-
-\[
-Net\ Benefit = B-K
-\]
-
-\[
-ROI = \frac{B-K}{K}
-\]
-
-If £65,000 of annual benefit requires £25,000 of implementation cost:
-
-\[
-ROI=\frac{65,000-25,000}{25,000}=1.6=160\%
-\]
-
-Some businesses report `Benefit / Cost = 2.6x`. Do not mix this benefit-cost multiple with net ROI; label the metric explicitly.
-
-## 10. Analyst workflow
-
-1. Confirm source systems and table grains.
-2. Profile missingness, duplicates, impossible values and date coverage.
-3. Aggregate lower-grain tables before joining.
-4. Reconcile daily totals with weekly/monthly source reports.
-5. Build KPI definitions once and reuse them in Python, SQL and Power BI.
-6. Segment results by store, daypart, weekday, promotion, delivery mix and region.
-7. Investigate outliers rather than automatically deleting them.
-8. Build forecasts or benchmarks for labour scheduling.
-9. Evaluate interventions with a credible comparison design.
-10. Translate estimates into operational and financial impact.
-
-## 11. What this project does not claim
-
-All stores, employees, monetary values, interventions and results are synthetic. They demonstrate an analytics workflow; they are not claimed to be actual Tahir Group or KFC operational results.
+For fixed demand T, productivity changing q0 -> q1 implies hypothetical hours saved
+T × (1/q0 - 1/q1). At 400 orders, 8 -> 8.3 orders/hour: 1.807 hours/day. Multiply by an
+avoidable marginal wage and eligible operating days only when service/quality constraints hold.
+Released hours do not automatically become cash savings. Do not monetize the same productivity
+benefit again as labour-cost reduction. ROI = (incremental cash benefit - implementation cost) /
+implementation cost; benefit-cost multiple = benefit/cost. Zero cost gives an undefined ROI.
+No real annual savings or ROI are estimated from screenshots.

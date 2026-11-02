@@ -1,51 +1,24 @@
--- PostgreSQL example: store/day operational KPIs
--- Grain must remain one row per store_id + date before joining to shift-level tables.
-
-WITH daily AS (
-    SELECT
-        date,
-        store_id,
-        net_sales_gbp,
-        net_sales_gbp / 1.20 AS revenue_ex_vat_gbp,
-        transactions,
-        paid_hours,
-        wage_cost_gbp,
-        food_cost_gbp,
-        waste_cost_gbp,
-        complaints,
-        forecast_sales_gbp
-    FROM store_daily
-)
-SELECT
-    date,
-    store_id,
-    net_sales_gbp,
-    revenue_ex_vat_gbp,
-    transactions,
-    net_sales_gbp / NULLIF(transactions, 0) AS avg_transaction_value_gbp,
-    transactions / NULLIF(paid_hours, 0) AS transactions_per_paid_hour,
-    net_sales_gbp / NULLIF(paid_hours, 0) AS sales_per_paid_hour_gbp,
-    100.0 * wage_cost_gbp / NULLIF(revenue_ex_vat_gbp, 0) AS labour_cost_pct,
-    100.0 * food_cost_gbp / NULLIF(revenue_ex_vat_gbp, 0) AS food_cost_pct,
-    100.0 * waste_cost_gbp / NULLIF(revenue_ex_vat_gbp, 0) AS waste_pct_sales,
-    1000.0 * complaints / NULLIF(transactions, 0) AS complaints_per_1000_orders,
-    100.0 * ABS(net_sales_gbp - forecast_sales_gbp) / NULLIF(net_sales_gbp, 0) AS ape_pct,
-    revenue_ex_vat_gbp - food_cost_gbp - wage_cost_gbp - waste_cost_gbp AS contribution_profit_gbp
-FROM daily;
-
--- Correct way to join shift data: aggregate first, then join.
-WITH shift_daily AS (
-    SELECT
-        date,
-        store_id,
-        SUM(paid_hours) AS shift_paid_hours,
-        SUM(overtime_hours) AS overtime_hours,
-        SUM(absence_flag) AS absence_shifts
-    FROM employee_shifts
-    GROUP BY 1, 2
-)
-SELECT d.*, s.shift_paid_hours, s.overtime_hours, s.absence_shifts
-FROM store_daily d
-LEFT JOIN shift_daily s
-  ON d.date = s.date
- AND d.store_id = s.store_id;
+-- PostgreSQL / DuckDB compatible. store_daily is already one validated row/store/date.
+-- Aggregate primitives first. All percentages here use 0..100; zero denominators yield NULL.
+SELECT store_id,
+    SUM(net_sales_gbp) AS net_sales_gbp,
+    SUM(gross_sales_gbp) AS gross_sales_gbp,
+    SUM(tax_gbp) AS tax_gbp,
+    SUM(net_sales_gbp) / NULLIF(SUM(transactions),0) AS avg_transaction_value_gbp,
+    1.0 * SUM(transactions) / NULLIF(SUM(paid_hours),0) AS transactions_per_paid_hour,
+    1.0 * SUM(transactions) / NULLIF(SUM(direct_hours),0) AS direct_transactions_per_hour,
+    100.0 * SUM(wage_cost_gbp) / NULLIF(SUM(net_sales_gbp),0) AS labour_cost_pct,
+    100.0 * SUM(team_wage_cost_gbp) / NULLIF(SUM(net_sales_gbp),0) AS team_labour_cost_pct,
+    100.0 * SUM(food_cost_gbp) / NULLIF(SUM(net_sales_gbp),0) AS food_cost_pct,
+    100.0 * SUM(waste_cost_gbp) / NULLIF(SUM(net_sales_gbp),0) AS waste_pct_sales,
+    SUM(net_sales_gbp-food_cost_gbp-packaging_cost_gbp-wage_cost_gbp) AS contribution_profit_gbp,
+    SUM(service_total_seconds) / NULLIF(SUM(service_orders),0) AS avg_service_seconds,
+    SUM(handoff_total_seconds) / NULLIF(SUM(handoff_orders),0) AS driver_handoff_seconds,
+    100.0 * SUM(delivery_net_sales_gbp) / NULLIF(SUM(net_sales_gbp),0) AS delivery_sales_mix_pct,
+    100.0 * SUM(rejected_orders) / NULLIF(SUM(offered_orders),0) AS rejection_pct,
+    100.0 * SUM(offline_minutes) / NULLIF(SUM(scheduled_minutes),0) AS offline_pct,
+    100.0 * SUM(delivery_issue_orders) / NULLIF(SUM(delivery_accuracy_eligible_orders),0) AS delivery_issue_pct,
+    100.0 * SUM(upgraded_transactions) / NULLIF(SUM(upgrade_eligible_transactions),0) AS upgrade_rate_pct,
+    100.0 * SUM(available_minutes) / NULLIF(SUM(eligible_minutes),0) AS availability_pct,
+    1000.0 * SUM(complaints) / NULLIF(SUM(transactions),0) AS complaints_per_1000_orders
+FROM store_daily GROUP BY store_id;
