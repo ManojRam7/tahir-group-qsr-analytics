@@ -1,0 +1,131 @@
+{
+  "title": "QSR Operations Portfolio",
+  "surface": "dashboard",
+  "status": "synthetic",
+  "generatedAt": "2026-11-02T21:48:20.018515+00:00",
+  "exportPreferences": {
+    "selected": null,
+    "destinations": []
+  },
+  "queries": {
+    "daily": {
+      "rows": [],
+      "source": {
+        "name": "Seed 42 synthetic QSR portfolio",
+        "type": "synthetic",
+        "files": [
+          "data/generated/store_daily.csv"
+        ],
+        "description": "One row per fictional store/trading date; sum costs, sales and hours before ratios.",
+        "period": "2026-01-05 to 2026-04-26",
+        "caveats": [
+          "Fictional data; not observed Tahir Group performance."
+        ],
+        "evidenceFlow": [
+          {
+            "title": "Reproduce",
+            "detail": "python scripts/generate_synthetic_data.py && python scripts/run_analysis.py"
+          }
+        ]
+      }
+    },
+    "channels": {
+      "rows": [],
+      "source": {
+        "name": "Seed 42 synthetic QSR portfolio",
+        "type": "synthetic",
+        "files": [
+          "data/generated/sales.csv"
+        ],
+        "description": "Channel/daypart totals across the complete 112 days.",
+        "period": "2026-01-05 to 2026-04-26",
+        "caveats": [
+          "Fictional data; not observed Tahir Group performance."
+        ],
+        "evidenceFlow": [
+          {
+            "title": "Reproduce",
+            "detail": "python scripts/generate_synthetic_data.py && python scripts/run_analysis.py"
+          }
+        ]
+      }
+    },
+    "forecasts": {
+      "rows": [],
+      "source": {
+        "name": "Seed 42 synthetic QSR portfolio",
+        "type": "synthetic",
+        "files": [
+          "reports/generated/forecast_scores.csv"
+        ],
+        "description": "Seven-day rolling-origin backtest; WAPE=sum absolute errors/sum actual.",
+        "period": "2026-01-05 to 2026-04-26",
+        "caveats": [
+          "Fictional data; not observed Tahir Group performance."
+        ],
+        "evidenceFlow": [
+          {
+            "title": "Reproduce",
+            "detail": "python scripts/generate_synthetic_data.py && python scripts/run_analysis.py"
+          }
+        ]
+      }
+    },
+    "events": {
+      "rows": [],
+      "source": {
+        "name": "Seed 42 synthetic QSR portfolio",
+        "type": "synthetic",
+        "files": [
+          "reports/generated/event_study.csv"
+        ],
+        "description": "Weekly fixed-effects differences vs week -1, cluster t intervals; twelve clusters.",
+        "period": "2026-01-05 to 2026-04-26",
+        "caveats": [
+          "Fictional data; not observed Tahir Group performance."
+        ],
+        "evidenceFlow": [
+          {
+            "title": "Reproduce",
+            "detail": "python scripts/generate_synthetic_data.py && python scripts/run_analysis.py"
+          }
+        ]
+      }
+    },
+    "did": {
+      "rows": [],
+      "source": {
+        "name": "Seed 42 synthetic QSR portfolio",
+        "type": "synthetic",
+        "files": [
+          "reports/generated/analysis.json"
+        ],
+        "description": "Equal store-day outcome means, six treated and six control stores; synthetic planning intervention on 2026-03-02.",
+        "period": "2026-01-05 to 2026-04-26",
+        "caveats": [
+          "Fictional data; not observed Tahir Group performance."
+        ],
+        "evidenceFlow": [
+          {
+            "title": "Reproduce",
+            "detail": "python scripts/generate_synthetic_data.py && python scripts/run_analysis.py"
+          }
+        ]
+      }
+    }
+  },
+  "id": "dashboard:1b5b747a-8555-49be-a4de-9a523e8fba7a",
+  "buildStatus": "updating",
+  "filters": [
+    {
+      "id": "store",
+      "label": "Fictional store",
+      "field": "store_id",
+      "defaultValue": "all",
+      "queryIds": [
+        "daily",
+        "channels"
+      ]
+    }
+  ]
+}

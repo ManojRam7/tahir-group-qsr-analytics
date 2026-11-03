@@ -22,3 +22,7 @@ source_material/
 build/
 dist/
 .ruff_cache/
+portfolio-site/
+portfolio-publish/
+portfolio-work/
+output/

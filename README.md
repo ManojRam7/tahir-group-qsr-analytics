@@ -9,6 +9,17 @@ The v0.2 redesign follows structural evidence from a privately reviewed 15-page 
 compilation. [Evidence and unresolved definitions](docs/source_evidence.md) separates visible
 screen facts from proposed mappings and missing data. Every dataset and example value is fictional.
 
+## Portfolio and learning materials
+
+[Open the public five-page dashboard](https://qsr-operations-manoj-portfolio.rams-007.chatgpt.site).
+It uses fictional historical data only; it is not a live restaurant feed or a Power BI file.
+
+- [Manual PostgreSQL and Power BI guide](docs/practical_learning_guide.md)
+- [One-page interview brief: summary, three points and ten Q&A](docs/interview_one_page.md)
+- [CV bullets and assumption register](docs/assumptions_and_cv.md)
+- [PostgreSQL schema, views and business queries](sql/postgresql/)
+- [Dashboard content and reproducible snapshot](dashboard/)
+
 ## What works
 
 - Sixteen synthetic tables: separate channel/daypart sales; team/manager shifts; delivery,
@@ -24,7 +35,7 @@ screen facts from proposed mappings and missing data. Every dataset and example 
   separate sales/transactions, warm-up nulls, MAE/RMSE/WAPE/bias and leakage tests.
 - Before/after arithmetic, validated common-date DID, store/date fixed effects, clustered
   Student-t intervals, pretrend gaps, pre-period placebo and weekly event-study diagnostics.
-- Executable teaching notebook, PostgreSQL-compatible SQL checked against Python with DuckDB,
+- Executable teaching notebook, PostgreSQL SQL checked against Python on PostgreSQL 18 and DuckDB,
   DAX measure templates, CI and privacy checks. DAX requires manual Power BI validation.
 
 ## Run locally
@@ -78,7 +89,7 @@ This project implements a working synthetic pipeline, not live RMF/Atlas/Macroma
 It does not infer the official fiscal calendar, LY comparable dates, scorecard algorithm,
 service boundaries, actual recipes/yields or delivery opportunity formula from cropped screens.
 Source-reported scorecard and ranking metrics need separate versioned snapshots; no official
-score is fabricated. No `.pbix` file or deployed dashboard is claimed.
+score is fabricated. The public web dashboard is deployed; a `.pbix` file has not been built or validated.
 
 Production calibration requires authorized sanitized exports, original headers, signed-off metric
 rules, timekeeping and wage inclusions, receipt/stock/waste/recipe records, immutable forecast
