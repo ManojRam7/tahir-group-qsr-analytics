@@ -25,7 +25,16 @@ synthetic treatment assignment and injected effects do not support real causal c
 Forecast benchmarks are evaluated on shared rolling origins, not a held-out production trial.
 Labour output is a whole-day staffing scenario, not a deployable station schedule.
 
-SQL is executed through DuckDB for compatible query/parity checks. A live PostgreSQL server and
-Power BI/DAX engine were not available; PostgreSQL deployment, DAX relationships/filter behaviour
-and a `.pbix` report still require platform validation. No live source-system adapters or official
+SQL also passed PostgreSQL 18.6 validation in an isolated temporary local cluster: all 16 imports,
+five views and seven business queries executed successfully. All row counts, daily KPI ratios,
+stock balances, forecast error metrics and the manual DID matched Python. The CI PostgreSQL job
+repeats these checks. Power BI/DAX relationships, filter behaviour and a `.pbix` report still
+require validation on Windows. No live source-system adapters or official
 scorecard calculation are claimed. Gaps and production inputs are listed in `source_evidence.md`.
+
+## Portfolio delivery
+
+All five dashboard pages rendered and the store filter was checked against source totals.
+Publication uploaded and read back the full HTML and 1,604 reviewed rows with matching SHA-256 hashes.
+Public access was confirmed. The source data is a historical synthetic snapshot, not a live feed.
+The interview brief renders to one page and the manual guide to nine pages.

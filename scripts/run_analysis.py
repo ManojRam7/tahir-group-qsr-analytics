@@ -48,6 +48,21 @@ def main():
         caveat="Few clusters; injected scenario effects, no real business causal claims.",
     )
     (output / "analysis.json").write_text(json.dumps(result, indent=2) + "\n")
+    pd.DataFrame(
+        [
+            {
+                "synthetic_only": True,
+                "outcome": outcome,
+                "intervention_date": "2026-03-02",
+                "treated_stores": int(df.loc[df.treated_store == 1, "store_id"].nunique()),
+                "comparison_stores": int(df.loc[df.treated_store == 0, "store_id"].nunique()),
+                **result["manual"],
+                "ci_low": ci[0],
+                "ci_high": ci[1],
+                "placebo": placebo["did_estimate"],
+            }
+        ]
+    ).to_csv(output / "did_results.csv", index=False)
     print(json.dumps(result, indent=2))
     print(pd.read_csv(output / "forecast_scores.csv").to_string(index=False))
 
