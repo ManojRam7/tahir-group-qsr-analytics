@@ -1,4 +1,11 @@
-# Claims and modelling assumptions
+# Team context claims and modelling assumptions
+
+## Reporting structure supplied by the user
+
+The user describes the Data Analyst/data team supporting a Business Analysis team of around 6–8 members. The Business Analysts guide Area Coaches on performance, ordering, waste, customer feedback and sales, and explain performance to the CEO and CTO. This is user-provided organisational context, not an independently verified org chart or evidence of report adoption. Detailed responsibilities and cadence in the learning guide are proposed role practice.
+
+See [team-focused CV recommendations](cv_recommendations.md) for employment wording conditional on actual duties, and [the interview brief](interview_one_page.md) for a first-person role-learning script. The technical demonstration and numerical results remain synthetic.
+
 
 ## CV wording supported by this portfolio
 
@@ -26,7 +33,7 @@ These are scenario choices, not recovered Tahir policies. Fourth's public hospit
 
 | Gap | Realistic scenario used or proposed | Validation needed |
 |---|---|---|
-| Audience and reporting | Designed for restaurant managers, area managers and finance; previous-day reconciliation each morning, weekly rota review, monthly management review | Named users, report samples and actual cadence |
+| Audience and reporting | User describes a 6–8-member Business Analysis audience, onward Area Coach guidance and CEO/CTO briefings; morning/weekly/monthly packs are proposed | Actual report users, personal contribution, report samples and cadence |
 | Refresh | Historical snapshot today; proposed batch after source close with loaded-through date and failed-batch alerts | Source SLA, late adjustment window, extraction permission |
 | Labour planning | Forecast transactions / assumed direct productivity plus manager coverage | Skills, station requirements, breaks, contracted hours and payroll rules |
 | Inventory | PO, receipt and invoice separate; receipt exceptions and periodic counts | Invoices/credits, valuation and case-pack history |

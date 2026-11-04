@@ -16,9 +16,16 @@ It uses fictional historical data only; it is not a live restaurant feed or a Po
 
 - [Manual PostgreSQL and Power BI guide](docs/practical_learning_guide.md)
 - [One-page interview brief: summary, three points and ten Q&A](docs/interview_one_page.md)
-- [CV bullets and assumption register](docs/assumptions_and_cv.md)
+- [Team-focused CV recommendations](docs/cv_recommendations.md)
+- [Evidence and assumption register](docs/assumptions_and_cv.md)
 - [PostgreSQL schema, views and business queries](sql/postgresql/)
 - [Dashboard content and reproducible snapshot](dashboard/)
+
+The learning documents now use the user-described reporting route: Data Analyst/data team →
+Business Analysis team of around 6–8 members → Area Coaches and CEO/CTO briefings. The
+first-person scripts teach team responsibilities; numerical examples remain synthetic and
+employment claims depend on actual personal delivery. Customer-review analysis is specified
+as a future requirement; only complaint counts exist in the current model.
 
 ## What works
 

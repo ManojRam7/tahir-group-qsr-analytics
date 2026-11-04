@@ -1,30 +1,30 @@
-# QSR analytics practical learning guide
+# Tahir Group data team practical guide
 
-Business questions to PostgreSQL queries and Power BI reports
+Supporting Business Analysts from operational data to Area Coach actions
 
-## What you will build
+## Your role and reporting audience
 
-You will load the existing fictional restaurant data into PostgreSQL, query it using pgAdmin, create reusable KPI views and build five Power BI report pages. The web portfolio dashboard demonstrates the intended views now. It is a web app, not a PBIX file.
+In the team structure you described, I work as the Data Analyst supporting around 6–8 Business Analysts. They guide Area Coaches on store performance and explain performance to the CEO and CTO. This guide shows how I prepare reliable data, dashboards and explanations for that audience. It is a role-learning workflow, not confirmation of personal employment delivery.
 
-Verified project scope: 12 fictional stores, 112 dates from 5 January to 26 April 2026, 1,344 store-day rows, 26,880 channel/daypart sales rows and 16 tables. The repository has tested calculations and a notebook. No private source images or real restaurant figures are needed.
+The runnable practice data covers 12 fictional stores, 112 dates, 1,344 store-days and 26,880 sales rows across 16 tables. I use it to practise the same analytical responsibilities without exposing internal figures. The published dashboard is a web application; the Power BI build remains a manual exercise.
 
 ## Agree the business questions first
 
-Sales: which stores or channels explain the movement in revenue and transactions?
+- Sales: which stores or channels explain the movement in revenue and transactions?
 
-Labour: is paid time aligned with demand, and are team and management costs understood?
+- Labour: is paid time aligned with demand, and are team and management costs understood?
 
-Inventory: what was ordered, received, counted, wasted or transferred?
+- Inventory: what was ordered, received, counted, wasted or transferred?
 
-Forecasting: how wrong were forecasts that genuinely existed before the trading date?
+- Forecasting: how wrong were forecasts that genuinely existed before the trading date?
 
-Intervention: did treated stores change more than comparable stores over the same dates?
+- Intervention: did treated stores change more than comparable stores over the same dates?
 
-## Use an explicit evidence boundary
+## Agree responsibilities and definitions
 
-The source screenshots support broad reporting structures, but do not reveal all internal definitions. The cadence, intended audiences, synthetic costs, recipe coefficients, stock policy and staffing target here are learning assumptions. Do not describe them as Tahir Group policy. An accurate replica needs authorised exports and signed-off definitions.
+I agree the question, measure, period and acceptance criteria with the Business Analysts. I own data preparation, reconciliation and technical explanations in this learning workflow; they own business interpretation and the onward briefing. These detailed responsibilities are proposed practice; exact ownership and approval rules need agreement.
 
-Proposed audience: restaurant managers, area managers and finance. Proposed cadence: previous-day reconciliation each morning, a weekly demand/rota review and a monthly review. This is a realistic operating design, not a verified history of report use.
+The reporting audience and onward route are user-provided context. A morning exception pack, weekly trading/stock review and monthly executive pack are proposed cadences. Actual refresh timing, store scope, report adoption and savings remain to be confirmed.
 
 Learning files: sql/postgresql/01_schema.sql; 02_views.sql; 03_business_questions.sql; import_manifest.csv; powerbi/measures.dax; and the 16 generated CSVs. The accompanying ZIP places these in clearly named folders.
 
@@ -32,21 +32,25 @@ Learning files: sql/postgresql/01_schema.sql; 02_views.sql; 03_business_question
 
 PostgreSQL is the database server that stores rows. pgAdmin is the desktop application used to connect to the server and run SQL. They are different parts of the setup.
 
-Install PostgreSQL from the official macOS download page. The EDB installer includes PostgreSQL and pgAdmin. Save your own database password securely; do not put it in source files.
+- Install PostgreSQL from the official macOS download page. The EDB installer includes PostgreSQL and pgAdmin. Save your own database password securely; do not put it in source files.
 
-Open pgAdmin. Under Servers, register a server if none is listed: name QSR Local, host localhost, port 5432, maintenance database postgres, username postgres and your installation password. These defaults apply when the server is on the same Mac.
+- Open pgAdmin. Under Servers, register a server if none is listed: name QSR Local, host localhost, port 5432, maintenance database postgres, username postgres and your installation password. These defaults apply when the server is on the same Mac.
 
-Right-click Databases, choose Create > Database, and name it qsr_portfolio. Select that database before opening Tools > Query Tool.
+- Right-click Databases, choose Create > Database, and name it qsr_portfolio. Select that database before opening Tools > Query Tool.
 
-Open 01_schema.sql in Query Tool and execute it. Refresh Schemas > qsr > Tables. You should see 16 empty tables. The script has no DROP commands. Use a new empty database for this exercise.
+- Open 01_schema.sql in Query Tool and execute it. Refresh Schemas > qsr > Tables. You should see 16 empty tables. The script has no DROP commands. Use a new empty database for this exercise.
 
 ## Generate data if you are using the repository
+
+```
 
 python scripts/generate_synthetic_data.py
 
 python scripts/run_analysis.py
 
 python scripts/prepare_psql_import.py
+
+```
 
 Run these from the repository root in the prepared Python environment. If you use the supplied learning ZIP, its data folder already contains the generated CSVs. Generated rows are deterministic for seed 42.
 
@@ -60,25 +64,31 @@ The schema includes primary and foreign keys. Load parent tables before child ta
 
 ## Manual pgAdmin import
 
-Import in this order: stores, items, sales, employee_shifts, service, delivery, availability, upgrades, purchase_orders, receipts, stock, transfers, waste, stock_counts, forecasts, store_daily.
+- Import in this order: stores, items, sales, employee_shifts, service, delivery, availability, upgrades, purchase_orders, receipts, stock, transfers, waste, stock_counts, forecasts, store_daily.
 
-Right-click each table > Import/Export Data. Choose Import, the matching CSV file, Format CSV, Encoding UTF8, Header Yes and delimiter comma. Check that the Columns tab follows import_manifest.csv.
+- Right-click each table > Import/Export Data. Choose Import, the matching CSV file, Format CSV, Encoding UTF8, Header Yes and delimiter comma. Check that the Columns tab follows import_manifest.csv.
 
-Leave conversion errors set to stop. Run the import, inspect Process Watcher/Messages and refresh the table. Blank forecast_sales_gbp during warm-up is NULL, not zero.
+- Leave conversion errors set to stop. Run the import, inspect Process Watcher/Messages and refresh the table. Blank forecast_sales_gbp during warm-up is NULL, not zero.
 
-Compare the imported row count with import_manifest.csv. Do not import the same file twice. For a fresh repeat, use a separate practice database or explicitly clear only your exercise tables.
+- Compare the imported row count with import_manifest.csv. Do not import the same file twice. For a fresh repeat, use a separate practice database or explicitly clear only your exercise tables.
 
 ## Repeatable psql alternative
 
 The generated output/postgresql/import_local.psql contains local paths and a transaction. It belongs on your own machine and is intentionally not committed. Run this in a terminal with psql installed:
 
+```
+
 psql -h localhost -U postgres -d qsr_portfolio \
 
   -f output/postgresql/import_local.psql
 
+```
+
 The backslash-copy command is a psql client command. Do not paste it into pgAdmin Query Tool. pgAdmin uses its import dialog; server-side COPY may require server filesystem permissions.
 
 ## Your first reconciliation query
+
+```
 
 SELECT COUNT(*) AS rows, COUNT(DISTINCT store_id) AS stores,
 
@@ -87,6 +97,8 @@ SELECT COUNT(*) AS rows, COUNT(DISTINCT store_id) AS stores,
  SUM(gross_sales_gbp)-SUM(net_sales_gbp)-SUM(tax_gbp) AS gap
 
 FROM qsr.store_daily;
+
+```
 
 Expected: 1,344 rows, 12 stores, 112 days and a tax gap near zero within floating-point tolerance. There are 26,880 rows in sales. Check MIN(date) and MAX(date) before interpreting a report.
 
@@ -98,19 +110,21 @@ Open and execute 02_views.sql in Query Tool. Views save query logic; they do not
 
 ## Core definitions
 
-Net sales already excludes tax. Gross = net + reported tax; never divide net by 1.2 again.
+- Net sales already excludes tax. Gross = net + reported tax; never divide net by 1.2 again.
 
-Average ticket = SUM(net sales) / SUM(transactions).
+- Average ticket = SUM(net sales) / SUM(transactions).
 
-Total labour % = 100 × SUM(all wages) / SUM(net sales). Team labour uses team wages only.
+- Total labour % = 100 × SUM(all wages) / SUM(net sales). Team labour uses team wages only.
 
-Sales per paid hour = SUM(net sales) / SUM(paid hours). Direct productivity uses team hours; all-paid productivity includes management.
+- Sales per paid hour = SUM(net sales) / SUM(paid hours). Direct productivity uses team hours; all-paid productivity includes management.
 
-Food usage includes recorded waste. Partial contribution = net sales - food usage - packaging usage - wages. It is not EBITDA.
+- Food usage includes recorded waste. Partial contribution = net sales - food usage - packaging usage - wages. It is not EBITDA.
 
-Service mean = total measured seconds / measured orders. Different timers and channel populations cannot be mixed.
+- Service mean = total measured seconds / measured orders. Different timers and channel populations cannot be mixed.
 
 ## A query you should be able to write from memory
+
+```
 
 SELECT store_id, SUM(net_sales_gbp) AS sales,
 
@@ -124,6 +138,8 @@ GROUP BY store_id
 
 ORDER BY labour_pct DESC;
 
+```
+
 Interpretation: a high labour percentage is a starting point for investigation. Check demand, opening hours, management coverage, service and training before recommending fewer hours. NULLIF protects against dividing by zero; an undefined ratio remains NULL.
 
 ## Avoid the common join mistake
@@ -134,23 +150,23 @@ Joining one store-day sales total directly to ten shifts repeats sales ten times
 
 03_business_questions.sql contains seven complete queries. Execute one selected query at a time in pgAdmin and explain the result before building a visual.
 
-Weekly trading: v_store_week includes days_loaded. Compare only complete seven-day weeks with the immediately preceding week; a missing week must not become the baseline.
+- Weekly trading: v_store_week includes days_loaded. Compare only complete seven-day weeks with the immediately preceding week; a missing week must not become the baseline.
 
-Labour: rank comparable stores by ratio-of-sums labour cost and productivity. Keep team and management definitions separate.
+- Labour: rank comparable stores by ratio-of-sums labour cost and productivity. Keep team and management definitions separate.
 
-Stock: opening + receipts + transfer-in - transfer-out - closing = actual usage. Actual usage - theoretical usage - waste = unexplained usage. Positive unexplained usage is an investigation signal, not proof of theft.
+- Stock: opening + receipts + transfer-in - transfer-out - closing = actual usage. Actual usage - theoretical usage - waste = unexplained usage. Positive unexplained usage is an investigation signal, not proof of theft.
 
-Purchasing: aggregate receipts by order/line before joining to purchase_orders. Outstanding cases = ordered - received. A short receipt must not be replaced by the ordered quantity.
+- Purchasing: aggregate receipts by order/line before joining to purchase_orders. Outstanding cases = ordered - received. A short receipt must not be replaced by the ordered quantity.
 
-Delivery: handoff time and adverse issue rate each have their own denominator. Report coverage explicitly; do not relabel the proxy issue rate as the official accuracy metric.
+- Delivery: handoff time and adverse issue rate each have their own denominator. Report coverage explicitly; do not relabel the proxy issue rate as the official accuracy metric.
 
 ## Worked stock example
 
 Opening 100 kg + received 50 + inbound 5 - outbound 3 - closing 72 = 80 kg actual usage. If theoretical usage is 75 kg and recorded waste is 3 kg, unexplained usage is 2 kg. At £4/kg, total usage cost is £320, including £12 of waste. Deduct £320 once from revenue, not £332.
 
-## Proposed daily analyst workflow
+## My daily reporting handoff
 
-First check whether all expected stores and dates arrived. Reconcile sales to source control totals and paid hours to timekeeping. Review failed checks, then refresh the report. Send an exception list to the agreed operational owner only after definitions are confirmed. Record the loaded-through date and any excluded stores. Reconcile late adjustments in the next controlled run.
+I check expected stores and dates, source totals and timekeeping reconciliation before releasing the report. I give the Business Analysts an exception list with the affected store, period, metric, comparison, likely explanation, confidence and suggested check. They coordinate Area Coach follow-up; I clarify the evidence and record corrections.
 
 This is a proposed batch workflow. The current web dashboard is a historical snapshot; it does not pull live restaurant data. Real refresh timing depends on source access, operational cutoffs and a tested refresh process.
 
@@ -158,17 +174,19 @@ This is a proposed batch workflow. The current web dashboard is a historical sna
 
 Power BI Desktop runs on Windows, not natively on macOS. Use an available Windows PC or a supported Windows 365/Azure Virtual Desktop environment. The web portfolio can be viewed on the Mac, but it is not a substitute for building and validating a PBIX.
 
-In Power BI Desktop choose Get data > PostgreSQL database. Enter the server and qsr_portfolio database, select Import, authenticate, then choose stores, dim_date, store_daily and any separate detailed facts you need.
+- In Power BI Desktop choose Get data > PostgreSQL database. Enter the server and qsr_portfolio database, select Import, authenticate, then choose stores, dim_date, store_daily and any separate detailed facts you need.
 
-If PostgreSQL and Power BI run on the same Windows machine, localhost is suitable. If PostgreSQL runs on your Mac and Power BI runs elsewhere, localhost points to the Windows machine. Use an approved reachable database host/secure connection, or start with CSVs copied to Windows. Do not open the database publicly just for the exercise.
+- If PostgreSQL and Power BI run on the same Windows machine, localhost is suitable. If PostgreSQL runs on your Mac and Power BI runs elsewhere, localhost points to the Windows machine. Use an approved reachable database host/secure connection, or start with CSVs copied to Windows. Do not open the database publicly just for the exercise.
 
-In Power Query set date columns to Date, IDs to Text, hours/costs to Decimal Number and order counts to Whole Number. Check the preview, then Close & Apply.
+- In Power Query set date columns to Date, IDs to Text, hours/costs to Decimal Number and order counts to Whole Number. Check the preview, then Close & Apply.
 
-In Model view create stores[store_id] 1-to-many store_daily[store_id], and dim_date[date] 1-to-many store_daily[date]. Use single-direction filtering from dimensions to facts. Mark dim_date as the date table.
+- In Model view create stores[store_id] 1-to-many store_daily[store_id], and dim_date[date] 1-to-many store_daily[date]. Use single-direction filtering from dimensions to facts. Mark dim_date as the date table.
 
-Add each measure from powerbi/measures.dax individually using New measure. Do not paste the entire multi-measure file into a single formula bar. Use the table name store_daily, or update measure references consistently.
+- Add each measure from powerbi/measures.dax individually using New measure. Do not paste the entire multi-measure file into a single formula bar. Use the table name store_daily, or update measure references consistently.
 
 ## First three measures
+
+```
 
 Net Sales GBP = SUM(store_daily[net_sales_gbp])
 
@@ -177,6 +195,8 @@ Transactions = SUM(store_daily[transactions])
 Average Transaction Value GBP =
 
  DIVIDE([Net Sales GBP], [Transactions])
+
+```
 
 Format money as GBP, counts as whole numbers and rates as percentages. DAX rates use 0 to 1; the SQL view labour_cost_pct uses 0 to 100. Do not apply percentage formatting to SQL values such as 20, or the visual will display 2,000%. Prefer DAX measures over averaging stored daily percentages.
 
@@ -232,21 +252,21 @@ The portfolio web dashboard is independently published using fictional historica
 
 ## A realistic demonstration plan
 
-Explain the business question and the grain of each table in one minute.
+- Explain the business question and the grain of each table in one minute.
 
-Run the SQL for one store, then reproduce the same total in the dashboard.
+- Run the SQL for one store, then reproduce the same total in the dashboard.
 
-Show why team labour and total labour percentages differ.
+- Show why team labour and total labour percentages differ.
 
-Trace a short receipt through stock usage and explain why waste is counted once.
+- Trace a short receipt through stock usage and explain why waste is counted once.
 
-Walk through the four DID means and point out the placebo limitation.
+- Walk through the four DID means and point out the placebo limitation.
 
-State clearly what was built, what is proposed, and what needs real source validation.
+- State clearly what was built, what is proposed, and what needs real source validation.
 
-## CV evidence you still need
+## Explain your own contribution
 
-Confirm your actual role/title/dates, personal contribution, real store coverage, dashboard users and reporting frequency. Add time saved only when measured. Add workplace intervention outcomes only with real launch/comparison evidence. Keep the synthetic portfolio under Projects if these facts are unavailable.
+Keep actual role/title/dates, store coverage, reporting cadence and personal delivery precise. Describe the 6–8-member Business Analysis audience as your stated organisational context. Use employment claims only for duties you performed; keep simulated examples labelled. The separate CV guide provides wording for both situations.
 
 ## Primary references
 
@@ -267,3 +287,45 @@ Public Power BI embedding — https://learn.microsoft.com/en-us/power-bi/collabo
 Fourth scheduling — https://uk.fourth.com/solution/workforce-management/scheduling
 
 Fourth purchasing and receiving — https://uk.fourth.com/solution/inventory-management/purchasing-receiving-invoicing
+
+## 9 From a Business Analyst request to a team decision
+
+## Agree a short brief before writing SQL
+
+Example request: “Which stores need an Area Coach review because waste is high while sales are below forecast?” I confirm the decision date, store population, comparison period and whether waste means recorded waste value or unexplained stock usage. I ask the Business Analyst to confirm the metric and priority rule before labelling stores red or green.
+
+## Prepare the analysis and dashboard
+
+I validate the source totals, then calculate sales, forecast error, waste/net-sales and stock exceptions at their proper grains. I show trend, store comparison and coverage. A high waste percentage can reflect lower sales as well as more waste, so I show both the value and rate. I separate confirmed evidence from a possible explanation.
+
+## Hand over an actionable exception
+
+Practice example only: opening stock 100 kg, receipts 50 kg, net transfers +2 kg and closing stock 72 kg imply usage of 80 kg. Theoretical usage 75 kg and recorded waste 3 kg leave 2 kg unexplained. My note asks the Business Analyst to arrange an Area Coach check of count accuracy, receipt timing and waste recording. It does not accuse the store team of loss or prescribe an order automatically.
+
+## Close the feedback loop
+
+The handoff contains store, period, issue, evidence, uncertainty, proposed action, agreed owner and review date. The Business Analyst confirms the action route; the Area Coach checks operational context with the store. I track corrections and compare the next agreed period. An action completion is not itself proof of a financial benefit.
+
+## Adapt the explanation for executive reporting
+
+I provide the Business Analysts with a short brief: what changed, where it is concentrated, likely drivers, confidence, proposed action and what decision is needed. For the CEO discussion, the suggested emphasis is trading performance and controllable costs. For the CTO discussion, it is source reliability, refresh latency, access and system issues. These are suggested emphases, not verified executive reporting requirements.
+
+## 10 Orders customer feedback and dashboard acceptance
+
+## Support an order recommendation without inventing policy
+
+A proposed planning calculation is max(0, forecast usage over the agreed cover period + approved safety stock - usable stock - confirmed inbound receipts). Convert base units to cases and round to the supplier pack. Check shelf life, lead time, delivery days, minimum orders and manager overrides. I supply the analysis; an authorised operational owner approves the order. Those policy inputs and approvals are not established by the current screenshots.
+
+## Bring customer reviews into the same discussion
+
+The current data has complaint counts and service measures, not a customer-review feed. A proposed review fact is one record per platform review ID, with store, submitted time, platform, rating scale, rating, sanitised text, theme and response status. Duplicate reviews, edited reviews, low sample sizes and platform coverage need checks. Keep identities and private comments out of public outputs.
+
+Within a comparable rating scale, an aggregate rating needs sum of rating scores divided by number of rated reviews; do not average store averages equally. Compare review volume and recurring themes alongside rating. Complaint rate uses complaints/eligible orders and answers a different question. Link themes to store-period service and delivery summaries, not directly to every transaction. Associations do not prove that a timer caused a review.
+
+## Run acceptance with the Business Analysis team
+
+I ask a nominated Business Analyst to select example stores and dates. We reconcile cards with SQL, test slicers, agree missing-data behaviour and check definitions and refresh timestamps. We confirm that the fixed DID page is not re-estimated by a normal slicer. Proposed Area Coach access needs an agreed store-area mapping and access rules before row-level security can be implemented.
+
+## Rehearse the manual working demonstration
+
+Open the PostgreSQL views and explain one KPI. Reproduce it for one store in the dashboard. Explain the exception and how it reaches a Business Analyst, then an Area Coach. Show the decision note that supports the executive briefing. State which parts you personally implemented and which remain design or learning exercises. Do not present the web application as an internally deployed Power BI report.
