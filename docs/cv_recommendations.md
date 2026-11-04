@@ -1,49 +1,55 @@
 # Tahir Group data analyst CV recommendations
 
-Business Analysis team support and operational reporting
+Complete CV bullets and interview explanations
 
-## Position the role around the reporting audience
+Recommended role heading: Data Analyst | Tahir Group. Use your actual employment dates. These finished bullets are intended for duties you personally performed; researched company scale does not establish individual delivery or the internal technology stack.
 
-Your stated reporting chain is Data Analyst / data team → Business Analysis team of around 6–8 members → Area Coaches and CEO/CTO briefings. The 6–8 figure describes the intended Business Analysis audience, not the size of the data team or proof that every member used a dashboard.
+## Recommended three CV bullets
 
-Use the employment bullets below only where the duties describe your own completed work. Keep your actual title and employment dates. The audience structure comes from your description; it does not establish personal delivery, adoption or business outcomes.
+- Extracted, cleaned and consolidated sales, labour and inventory data from operational databases and reporting exports using Python (pandas) and PostgreSQL, creating validated store-level datasets and SQL KPI views for weekly business performance reporting.
 
-## Three stronger employment bullets to adapt
+- Developed Power BI dashboards using Power Query, star-schema modelling and DAX to track weekly store rankings, sales by channel, transactions, average transaction value and contribution after food, packaging and labour costs.
 
-- Analysed store-level sales, transactions, labour and inventory data using SQL and Python, providing performance insights to a 6–8-member Business Analysis team supporting Area Coaches and executive reporting.
+- Delivered weekly performance analysis to a 6–8-member Business Analysis team, identifying underperforming stores and channels, stock and waste exceptions, and labour-efficiency opportunities using labour cost percentage and sales per paid hour to support Area Coach reviews and executive reporting.
 
-- Developed and maintained Power BI reports covering sales performance, labour efficiency, inventory receipts and food waste, translating Business Analyst requirements into validated KPIs and store-level exception reporting.
+## Company context and scope
 
-- Investigated store-performance exceptions and prepared evidence-based reporting for Business Analysts, supporting Area Coach reviews of sales, staffing and stock management.
+Tahir Group publicly describes an estate of 42 restaurants and more than 1,000 people on its company LinkedIn page. Its Great Place to Work profile, updated March 2026, reports 1,068 UK-based employees. “Around 1,100 employees” is a reasonable rounded company description, not the number of employees whose records an analyst necessarily analysed. The sources reviewed do not explicitly confirm that the entire current 42-site estate is KFC-only.
 
-Bullet 1 requires actual SQL/Python use and support for that audience. Bullet 2 requires a Power BI report you built and maintained; a web app or DAX file alone does not establish it. Bullet 3 is a scope-based alternative when no real DID intervention can be substantiated. Keep only domains and responsibilities you actually covered.
+Keep the estate size in a company context line if useful: “Restaurant group with 42 restaurants and over 1,000 employees.” Write “reporting across 42 restaurants” only if the reports actually covered the full estate during your employment. Use the store count and workforce applicable to that period, rather than a later company count.
 
-## If Power BI delivery is still in progress
+## Why these replace the earlier bullets
 
-Use this wording for the demonstrable deliverable: “Created an interactive operations dashboard aligned to a Business Analysis team’s reporting needs; prepared PostgreSQL KPI views and Power BI measures for sales, labour, inventory and service analysis.” Describe it as a demonstration if it was not used internally.
+The first describes the data preparation and PostgreSQL deliverable. The second names the dashboard technologies and the commercial measures. The third explains the reporting audience, analysis and operational decisions. They provide scope and purpose without inventing savings, revenue uplifts or a real DID intervention.
 
-## DID wording and evidence to keep
+## Technical and business explanations for interviews
 
-## Use a real intervention only when evidenced
+## Extraction cleaning and database loading
 
-Replacement bullet template: “Evaluated [actual operational change] across [number] treatment and [number] comparison stores using Difference-in-Differences on [outcome], estimating [effect and units] over [pre/post dates], with [relevant validation].” Fill every bracket from actual work; omit the estimate if unavailable.
+Use “extracted” for database queries, approved exports or APIs. Use “scraped” only if you actually collected information from web pages using a scraper. Loading reporting tables is an ETL task; call it a database migration only when you moved a database or workload between systems. Explain missing-value treatment, duplicate keys, store/date mapping, data types and source-to-report reconciliation.
 
-For the current completed exercise: “Applied Difference-in-Differences to a simulated labour-planning change across six treated and six comparison stores, estimating +0.218 transactions per paid hour and assessing pretrends, placebo effects and clustered uncertainty.” Keep “simulated”; this is not a verified Tahir improvement.
+The PostgreSQL skills behind this workflow include joins, CTEs, conditional aggregation, views, window functions for weekly comparisons and NULLIF for undefined ratios. Sales, shifts, stock items and receipt lines have different grains: aggregate each before joining. Mention each technique in interviews only if you can show and explain your own query.
 
-## Strengthen scope before adding outcomes
+## Sales channel and cost performance
 
-- Confirm the number of actual stores covered and the reporting period. Twelve is the fictional example estate, not Tahir’s verified estate.
+Weekly sales ranking and contribution ranking answer different questions. Compare complete trading weeks and store formats; show transactions, net average ticket, channel mix and week-on-week changes. Compare top/bottom channels by net sales and mix. Channel profitability also needs channel-specific fees, discounts and cost allocations; sales leadership alone does not establish margin leadership.
 
-- Use “supporting a 6–8-member Business Analysis team” only if that describes your work. “Used by eight people” needs adoption evidence.
+In this implementation, net sales excludes tax. Partial contribution = net sales - food usage cost - packaging usage cost - wages. Food usage already contains recorded waste, so waste must not be deducted again. Recorded waste remains a separate control KPI. Net profit also needs other relevant costs; the current calculation does not include rent, utilities, royalties, platform fees, overheads or all accounting adjustments.
 
-- Add daily, weekly or monthly reporting only when that was the actual cadence. A proposed workflow does not prove frequency.
+## Labour inventory and team handoff
 
-- Record your own SQL, model, dashboard, testing and stakeholder contributions separately from the wider team’s delivery.
+Labour cost % = total wages / net sales. Sales per paid hour = net sales / paid hours. Transactions per paid hour separates order productivity from price/mix effects. Use ratios of totals, keep team and management hours distinct, and review service and demand before recommending a staffing change. Do not rank efficiency from sales alone.
 
-- Keep a measured before/after baseline before claiming hours saved, reduced waste or increased revenue. Do not borrow the synthetic DID effect for an employment outcome.
+Stock usage = opening + receipts + inbound transfers - outbound transfers - closing. Unexplained usage = stock usage - theoretical usage - recorded waste. Orders are commitments; receipts change stock. The analyst provides the validated evidence and exceptions to Business Analysts, who guide Area Coaches and brief executives in the structure you described.
 
-## Additional interview disclosures
+## Evidence boundaries and primary sources
 
-Explain the source systems and permissions; trading-date and tax rules; table grains; KPI denominators; dashboard freshness; quality exceptions; who approved definitions; who owned actions; and how results were reviewed. Customer review analysis requires ratings, review counts, dates, platform and text/theme data; the current complaint counter is insufficient.
+The 6–8-member Business Analysis audience comes from your description. Public research did not establish PostgreSQL, Python, Power BI, specific source-system integrations or your individual role as Tahir’s internal stack/delivery. The working project demonstrates those tools with synthetic data. Keep the simulated DID separate from real employment outcomes unless a real intervention can be substantiated.
 
-In executive questions, explain that the Business Analysts lead the CEO/CTO briefing in the structure you described. Your analytical contribution is the reconciled evidence and explanation behind their report. Do not imply direct executive presentation or managerial authority unless you held it.
+Tahir Group company page and 42-restaurant statement: https://uk.linkedin.com/company/tahir-group-restaurants
+
+Great Place to Work profile and March 2026 headcount: https://www.greatplacetowork.co.uk/certified-company/1575869
+
+Official restaurant locator and over-40 description: https://www.tahir-group.co.uk/our-restaurants/
+
+Historical KFC estate of 41 after the Barack transaction: https://www.pkfsmithcooper.com/deals/tahir-group/
