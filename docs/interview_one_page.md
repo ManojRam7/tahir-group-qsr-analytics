@@ -1,37 +1,37 @@
-# QSR project interview brief
+# Tahir Group data analyst interview brief
 
-Independent portfolio project | Plain spoken interview preparation
+Team role preparation using the reporting structure you described
 
-Project summary: I built a restaurant analytics portfolio using synthetic data for 12 fictional stores over 112 days. It has 16 tables and 26,880 channel and daypart sales rows. I used SQL and Python to check sales, labour and inventory, and built a five-page interactive dashboard. PostgreSQL scripts and Power BI measures are ready for the manual learning exercise. This is not evidence of an internal Tahir deployment.
+Use this first-person role script for duties you actually performed. The team structure is user-provided; the worked data and DID figures remain synthetic.
+
+Role summary: In this workflow, I support a Business Analysis team of around 6–8 people with reliable store-performance analysis. I prepare SQL datasets, KPI definitions and dashboard views covering sales, labour, inventory and service. The Business Analysts use the findings to guide Area Coaches and explain performance to the CEO and CTO. My responsibility is to make the numbers accurate, explain the drivers and provide evidence for decisions.
 
 ## Three points to remember
 
-Scope: 12 fictional stores, six treated and six comparison stores. Say clearly that the data is synthetic.
+- Audience: my immediate reporting audience is the Business Analysis team; they lead the Area Coach guidance and executive explanation.
 
-Quality: keep net sales excluding tax, aggregate each fact before joining, and count waste only once.
+- Delivery: I turn a business question into validated data, clear KPIs, dashboard views and an exception list with owners and follow-up dates.
 
-Impact: simulated DID is +0.218 orders per paid hour, with a 95% interval of +0.142 to +0.293. It is not a real business saving.
+- Evidence: distinguish my contribution from the wider team’s work. The public example covers 12 fictional stores; real coverage, reporting frequency and savings need their own evidence.
 
 ## Ten interview questions and answers
 
-1 Tell me about this project  I wanted to understand how a restaurant manager can connect sales, staffing and stock. I built a reproducible portfolio with fictional data and showed the main KPIs in an interactive dashboard.
+1 What is your role in the team  I turn operational data into information the Business Analysts can use. I explain what changed, where it changed and what needs checking before they advise the Area Coaches.
 
-2 What business decision does it support  It helps a manager investigate high labour cost, poor forecast accuracy, waste and slow delivery handoff. I would check the reason with the manager before recommending any staffing change.
+2 Who uses your dashboards  The immediate audience is around 6–8 Business Analysts, based on the team structure described. They guide Area Coaches and brief the CEO and CTO. I do not claim that I personally present to executives unless I do.
 
-3 What did you personally deliver  I can explain the SQL, Python checks, KPI definitions and dashboard views in this portfolio. I would describe Power BI as completed only after I build and validate the PBIX myself.
+3 How do you start a reporting request  I ask what decision is needed, for which stores and period, and by when. I agree the KPI definition and comparison, then build a small view and check it with the Business Analyst.
 
-4 How did you avoid duplicate sales  Sales and shifts have different grains. I first grouped shifts to store and date, then joined one row to one row. I checked row counts and sales totals before and after the join.
+4 How do you trust the numbers  I check missing stores and dates, duplicate keys and source totals. Sales, shifts and stock have different grains. I aggregate each fact before joining, then recheck totals.
 
-5 How do you calculate labour percentage  I divide wage cost by net sales excluding tax. Team labour uses team wages only. Total labour includes management. I divide total wages by total sales instead of averaging daily percentages.
+5 How do you explain sales and labour  I separate transaction volume from average ticket and look at channel mix. Labour percentage is total wages divided by net sales. I check demand, paid hours and service before suggesting a staffing review.
 
-6 How did you handle inventory  Orders are commitments. Receipts increase stock. Opening stock plus receipts and net transfers minus closing stock gives actual usage. I compare this with theoretical usage and recorded waste.
+6 How do you support orders and waste decisions  I compare forecasts, stock on hand, receipts and waste. Orders are commitments; receipts add stock. I flag shortages and unexplained usage to the Business Analysts for an Area Coach review.
 
-7 How did you test forecasting  I predicted seven days ahead using only history available at the forecast date. I compared seasonal naive with a four-week weekday average, using WAPE, MAE, RMSE and bias.
+7 What about customer reviews  I would compare rating and review volume by platform and classify recurring themes. Reviews are not in the current dataset; complaint counts cannot replace ratings. Customer identities do not belong in a public report.
 
-8 Explain your DID result  I simulated a labour-planning change on 2 March 2026. Six treated stores were compared with six controls, using 56 days before and after. DID on orders per all-paid hour was +0.218; treated change was +0.193 and control change was -0.025.
+8 How do you deliver a dashboard  I agree measures and filters, reconcile them with SQL and ask the Business Analysts to test examples. I document freshness and exceptions. The current deliverable is a web dashboard; Power BI measures await PBIX validation.
 
-9 Can you call that causal impact  Only under strong assumptions. I checked pre-period gaps, a placebo and event estimates. The placebo was +0.094 and an early pre-event gap remained. With 12 clusters and synthetic data, I would not claim real causal savings.
+9 Explain the DID example  The simulated planning change starts on 2 March 2026: six treated and six comparison stores, 56 days before and after. DID is 0.193 minus negative 0.025, giving +0.218 transactions per paid hour; the 95% interval is +0.142 to +0.293. The placebo is +0.094, so this does not prove a real business improvement.
 
-10 What would you do in production  I would agree definitions and refresh timing with operations and finance, validate authorised exports, log failed loads and restrict access. I would confirm reporting use and measure any time saving before putting an outcome on my CV.
-
-Employment, actual store coverage, report users and workplace outcomes must be verified separately. Use this under Projects until those facts are confirmed. The published dashboard is a historical snapshot, not a live restaurant feed.
+10 How do you explain business impact  I explain the issue, likely driver, action owner and review date. I separate an observed change from an estimated intervention effect. I claim time saved or savings only after checking a measured baseline and follow-up result.

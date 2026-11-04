@@ -60,3 +60,15 @@ Platform ratings require weighted response counts and remain unavailable. Offici
 peak speed, loyalty, WACL, scheduled peak measures, gap/wash, SSSG and scorecard outputs are not
 recreated from insufficient evidence. Store source reported values as snapshots with units,
 period/window, coverage, rule version and provenance before attempting reconciliation.
+
+## Decision and reporting handoff
+
+The user describes the Data Analyst/data team supplying a 6–8-member Business Analysis team,
+which guides Area Coaches and briefs the CEO and CTO. The learning workflow assigns data
+preparation, reconciliation, KPI implementation and technical explanations to the analyst;
+business interpretation, onward briefing and action coordination sit with the Business Analysts.
+These detailed responsibilities are a proposed operating design, subject to actual ownership.
+
+Customer feedback requires a separate review fact and governed review text/ratings feed. It is
+not implemented by the complaint counter. Suggested review grains and acceptance checks are
+in the practical guide. No customer-review dataset, theme classifier or rating dashboard is claimed.
